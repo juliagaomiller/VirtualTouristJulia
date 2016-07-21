@@ -109,8 +109,31 @@ class MapVC: UIViewController, MKMapViewDelegate {
     
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
         if (deleteMode) {
-            print(view.annotation)
-            self.map.removeAnnotation(view.annotation!)
+            
+            let lat = view.annotation!.coordinate.latitude
+            let long = view.annotation!.coordinate.longitude
+            
+            print("Before delete: ", locationArray)
+            
+            for annotationDic in locationArray {
+                var i = 0
+                if lat == annotationDic["Latitude"]{
+                    if long == annotationDic["Longitude"]{
+                        print("index: ", i)
+                        print(locationArray[i])
+                        locationArray.removeAtIndex(i)
+                        NSUserDefaults.standardUserDefaults().setObject(locationArray, forKey: "LocationArray")
+                        NSUserDefaults.standardUserDefaults().synchronize()
+                    self.map.removeAnnotation(view.annotation!)
+                        print("After delete: ", locationArray)
+                        print("NSUserdefault: ", NSUserDefaults.standardUserDefaults().objectForKey("LocationArray"))
+                        return
+                    }
+                }
+                i++
+            }
+            
+            
         }
 //        for annotationDic in locationArray {
 //            
