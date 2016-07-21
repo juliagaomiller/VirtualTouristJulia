@@ -21,16 +21,23 @@ class MapVC: UIViewController, MKMapViewDelegate {
     var deleteMode = false
     
     override func viewDidLoad() {
-        enableLongPress()
-        editBtn = UIBarButtonItem(title: "Edit", style: UIBarButtonItemStyle.Plain, target: self, action: "enableDelete")
-        doneBtn = UIBarButtonItem(title: "Done", style: UIBarButtonItemStyle.Plain, target: self, action: "disableDelete")
-        disableDelete()
+        prepareView()
     }
     
-    func enableLongPress(){
+    func prepareView(){
+        
         let longPress = UILongPressGestureRecognizer(target: self, action: "addAnnotation:")
-        longPress.minimumPressDuration = 2.0
+        longPress.minimumPressDuration = 1.5
         map.addGestureRecognizer(longPress)
+        
+        editBtn = UIBarButtonItem(title: "Edit", style: UIBarButtonItemStyle.Plain, target: self, action: "enableDelete")
+        doneBtn = UIBarButtonItem(title: "Done", style: UIBarButtonItemStyle.Plain, target: self, action: "disableDelete")
+        
+        disableDelete()
+        
+        //LOAD UP MAP LOCATION FROM NSUSERDEFAULTS
+        
+        //LOAD UP ARRAY OF PINS
     }
     
     func addAnnotation(touch: UIGestureRecognizer){
