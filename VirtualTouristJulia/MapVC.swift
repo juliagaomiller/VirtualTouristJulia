@@ -11,52 +11,73 @@
 //TRY TO DUPLICATE CODE FROM OTHER PROJECTS AND EXPLAIN WHY IT WORKS. 
 //SAVE PIN IN CORE DATA.
 //RELOOK AT NOTES.
+//IF THERE IS ANYTHING YOU DON'T UNDERSTAND IN THE OTHER PROJECT'S CODE, IT MEANS THAT YOUR FOUNDATIONAL KNOWLEDGE IS NOT STRONG ENOUGH. ALWAYS COMPARE 2 OTHER PROJECTS TO SEE SIMILARITIES AND LEARN THIS COMMON TRAITS.
+//FILE OPEN RECENT.
+
+//***********//
+//SAVE PIN TITLE AND LAT AND LONG INTO CORE DATA INSTEAD OF NSUSERDEFAULTS, THEN CREATE THE FLICKR SEARCH
+
+//PTD LEARNING - LEARN MORE ABOUT SHARED INSTANCES
 
 import Foundation
 import UIKit
 import MapKit
+import CoreData
 
 class MapVC: UIViewController, MKMapViewDelegate {
     
     @IBOutlet weak var map: MKMapView!
     @IBOutlet weak var deleteView: UIView!
     @IBOutlet weak var deleteLabel: UILabel!
-    
     @IBOutlet weak var editBtn: UIBarButtonItem!
+    
     var doneBtn: UIBarButtonItem!
-    var locationArray = [[String: String]]()
     var deleteMode = false
     
     override func viewDidLoad() {
+        doneBtn = UIBarButtonItem(title: "Done", style: UIBarButtonItemStyle.Plain, target: self, action: "disableDelete")
         map.delegate = self
         
-        disableDelete()
-        
-        if NSUserDefaults.standardUserDefaults().objectForKey("locationArray") != nil {
-            locationArray = NSUserDefaults.standardUserDefaults().objectForKey("locationArray") as! [[String:String]]
-            for dictionary in locationArray {
-                let lat = Double(dictionary["Latitude"]!)
-                let long = Double(dictionary["Longitude"]!)
-                let title = dictionary["LocName"]
-                
-                let annotation = MKPointAnnotation()
-                annotation.coordinate = CLLocationCoordinate2DMake(lat!, long!)
-                annotation.title = title
-                
-                self.map.addAnnotation(annotation)
-            }
-        }
-        
-        let longPress = UILongPressGestureRecognizer(target: self, action: "dropPin:")
-        longPress.minimumPressDuration = 1
-        map.addGestureRecognizer(longPress)
-        
-        doneBtn = UIBarButtonItem(title: "Done", style: UIBarButtonItemStyle.Plain, target: self, action: "disableDelete")
-        
-        //PTD - Load up map location from previous time map was closed.
+        disablePinDelete()
+        retrieveAndPlaceSavedPins()
+        addLongPressRecognizer()
     }
     
-    func dropPin(touch: UIGestureRecognizer){
+    override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(true)
+        //PTD - Save map state function.
+    }
+    
+    func addLongPressRecognizer(){
+        let longPress = UILongPressGestureRecognizer(target: self, action: "dropAndSavePin:")
+        longPress.minimumPressDuration = 1
+        map.addGestureRecognizer(longPress)
+    }
+    
+    lazy var sharedContext: NSManagedObjectContext = {
+        return CoreDataStackManager().sharedInstance().managedObjectContext
+    }()
+    
+    func retrieveAndPlaceSavedPins() {
+        var pins = [Pin]()
+        let fr = NSFetchRequest(entityName: "Pin")
+        do {
+            pins = try sharedContext.executeFetchRequest(fr) as! [Pin]
+        } catch let error as NSError {
+            print("Error in retrieveAndPlaceSavedPins(): ", error)
+        }
+        for pin in pins {
+            
+            let coordinate = CLLocationCoordinate2DMake(pin.latitude, pin.longitude)
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = coordinate
+            annotation.title = pin.title
+            
+            self.map.addAnnotation(annotation)
+        }
+    }
+    
+    func dropAndSavePin(touch: UIGestureRecognizer){
         if (!deleteMode){
             if touch.state == UIGestureRecognizerState.Began {
                 let point = touch.locationInView(map)
@@ -80,20 +101,14 @@ class MapVC: UIViewController, MKMapViewDelegate {
                             //PTD - print pm and check where ocean is located
                             //PTD - check pm and check how to write city and country of foreign country
                         }
-                        self.savePin(String(coordinate.latitude), long: String(coordinate.longitude), title: annotation.title!)
+                        let pin = Pin(lat: Double(coordinate.latitude), long: Double(coordinate.longitude), locName: annotation.title!, context: self.sharedContext)
+                        CoreDataStackManager().sharedInstance().saveContext()
+                        
                     }
                 })
                 self.map.addAnnotation(annotation)
             }
         }
-    }
-    
-    func savePin(lat: String, long: String, title: String){
-        let locationDictionary = ["Latitude" : lat, "Longitude" : long, "LocName" : title]
-        self.locationArray.append(locationDictionary)
-                
-        NSUserDefaults.standardUserDefaults().setObject(self.locationArray, forKey: "locationArray")
-        NSUserDefaults.standardUserDefaults().synchronize()
     }
     
     @IBAction func enableDelete(sender: AnyObject) {
@@ -103,7 +118,7 @@ class MapVC: UIViewController, MKMapViewDelegate {
         self.navigationItem.rightBarButtonItem = doneBtn
     }
     
-    func disableDelete() {
+    func disablePinDelete() {
         deleteMode = false
         deleteLabel.hidden = true
         deleteView.hidden = true
@@ -135,18 +150,19 @@ class MapVC: UIViewController, MKMapViewDelegate {
                     print("MapVC126-Error.")
                     return
                 }
-            for (index, _) in locationArray.enumerate() {
-                let title = locationArray[index]["LocName"]
-                if selectedTitle == title!{
-                    print("Index: ", index)
-                    print(title)
-                    locationArray.removeAtIndex(index)
-                    NSUserDefaults.standardUserDefaults().setObject(locationArray, forKey: "locationArray")
-                    NSUserDefaults().synchronize()
-                    self.map.removeAnnotation(view.annotation!)
-                    return
-                }
-            }
+//            for (index, _) in locationArray.enumerate() {
+//                let title = locationArray[index]["LocName"]
+//                if selectedTitle == title!{
+//                    print("Index: ", index)
+//                    print(title)
+//                    locationArray.removeAtIndex(index)
+//                    NSUserDefaults.standardUserDefaults().setObject(locationArray, forKey: "locationArray")
+//                    NSUserDefaults().synchronize()
+//                    self.map.removeAnnotation(view.annotation!)
+                    //PTD - CHANGE THIS TO CORE DATA. AND MAKE SURE IS REMOVED.
+//                    return
+//                }
+//            }
         }
     }
 
