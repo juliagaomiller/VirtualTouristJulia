@@ -37,6 +37,13 @@ class MapVC: UIViewController, MKMapViewDelegate {
     override func viewDidLoad() {
         doneBtn = UIBarButtonItem(title: "Done", style: UIBarButtonItemStyle.Plain, target: self, action: "disableDelete")
         map.delegate = self
+
+        do {
+            try fetchedResultsController.performFetch()
+        }
+        catch {
+            abort()
+        }
         
         disablePinDelete()
         retrieveAndPlaceSavedPins()
@@ -67,27 +74,16 @@ class MapVC: UIViewController, MKMapViewDelegate {
     
     func retrieveAndPlaceSavedPins() {
         
-        guard let pins = fetchedResultsController.fetchedObjects as! [Pin] else {
-            print(fetchedResultsController.fetchedObjects)
+        let pins = fetchedResultsController.fetchedObjects as! [Pin]
+        
+        for pin in pins {
+            let lat = CLLocationDegrees(pin.latitude)
+            let long = CLLocationDegrees(pin.longitude)
+            let annotation = MKPointAnnotation()
+            annotation.coordinate = CLLocationCoordinate2DMake(lat, long)
+            annotation.title = pin.title
+            self.map.addAnnotation(annotation)
         }
-        
-        
-        print(pins)
-//        for pin in pins {
-//            print(pin)
-//        }
-//        for pin in pins {
-//            
-//            let lat = CLLocationDegrees(pin.latitude)
-//            let long = CLLocationDegrees(pin.longitude)
-//            
-//            let coordinate = CLLocationCoordinate2DMake(lat, long)
-//            let annotation = MKPointAnnotation()
-//            annotation.coordinate = coordinate
-//            annotation.title = pin.title
-//            
-//            self.map.addAnnotation(annotation)
-//        }
     }
     
     func dropAndSavePin(touch: UIGestureRecognizer){
