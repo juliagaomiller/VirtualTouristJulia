@@ -58,14 +58,19 @@ class MapVC: UIViewController, MKMapViewDelegate {
         return CoreDataStackManager().sharedInstance().managedObjectContext
     }()
     
-    func retrieveAndPlaceSavedPins() {
-        var pins = [Pin]()
+    lazy var fetchedResultsController: NSFetchedResultsController = {
         let fr = NSFetchRequest(entityName: "Pin")
-        do {
-            pins = try sharedContext.executeFetchRequest(fr) as! [Pin]
-        } catch let error as NSError {
-            print("Error in retrieveAndPlaceSavedPins(): ", error)
+        fr.sortDescriptors = []
+        let frc = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: self.sharedContext, sectionNameKeyPath: nil, cacheName: nil)
+        return frc
+    }()
+    
+    func retrieveAndPlaceSavedPins() {
+        
+        guard let pins = fetchedResultsController.fetchedObjects as! [Pin] else {
+            print(fetchedResultsController.fetchedObjects)
         }
+        
         
         print(pins)
 //        for pin in pins {

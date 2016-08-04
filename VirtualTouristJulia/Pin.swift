@@ -1,7 +1,7 @@
 import UIKit
 import CoreData
 
-@objc(Pin)
+//@objc(Pin)
 class Pin: NSManagedObject {
     
     @NSManaged var latitude:NSNumber
