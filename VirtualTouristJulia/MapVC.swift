@@ -66,15 +66,23 @@ class MapVC: UIViewController, MKMapViewDelegate {
         } catch let error as NSError {
             print("Error in retrieveAndPlaceSavedPins(): ", error)
         }
-        for pin in pins {
-            
-            let coordinate = CLLocationCoordinate2DMake(pin.latitude, pin.longitude)
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = coordinate
-            annotation.title = pin.title
-            
-            self.map.addAnnotation(annotation)
-        }
+        
+        print(pins)
+//        for pin in pins {
+//            print(pin)
+//        }
+//        for pin in pins {
+//            
+//            let lat = CLLocationDegrees(pin.latitude)
+//            let long = CLLocationDegrees(pin.longitude)
+//            
+//            let coordinate = CLLocationCoordinate2DMake(lat, long)
+//            let annotation = MKPointAnnotation()
+//            annotation.coordinate = coordinate
+//            annotation.title = pin.title
+//            
+//            self.map.addAnnotation(annotation)
+//        }
     }
     
     func dropAndSavePin(touch: UIGestureRecognizer){
