@@ -19,6 +19,8 @@
 
 //PTD LEARNING - LEARN MORE ABOUT SHARED INSTANCES
 
+//SWTICH TO ALBUM WHEN YOU PRESS ON A PIN. 
+
 import Foundation
 import UIKit
 import MapKit
@@ -34,8 +36,14 @@ class MapVC: UIViewController, MKMapViewDelegate {
     var doneBtn: UIBarButtonItem!
     var deleteMode = false
     
+    let lat = "latitude"
+    let long = "longitude"
+    let latDelta = "latDelta"
+    let longDelta = "longDelta"
+    let savedMapRegion = "savedMapRegion"
+    
     override func viewDidLoad() {
-        doneBtn = UIBarButtonItem(title: "Done", style: UIBarButtonItemStyle.Plain, target: self, action: "disableDelete")
+        doneBtn = UIBarButtonItem(title: "Done", style: UIBarButtonItemStyle.Plain, target: self, action: "disablePinDelete")
         map.delegate = self
 
         do {
@@ -45,6 +53,7 @@ class MapVC: UIViewController, MKMapViewDelegate {
             abort()
         }
         
+        loadMapRegion()
         disablePinDelete()
         retrieveAndPlaceSavedPins()
         addLongPressRecognizer()
@@ -52,7 +61,7 @@ class MapVC: UIViewController, MKMapViewDelegate {
     
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(true)
-        //PTD - Save map state function.
+        saveMapRegion()
     }
     
     func addLongPressRecognizer(){
@@ -136,6 +145,32 @@ class MapVC: UIViewController, MKMapViewDelegate {
         //PTD - Figure out why the edit button isn't showing back up again when you press Done.
     }
     
+    func loadMapRegion(){
+        
+        guard let savedRegion = NSUserDefaults.standardUserDefaults().objectForKey(savedMapRegion) as? [String:Double]
+            else {
+                print("First time app launching.")
+                return
+        }
+
+        let region = MKCoordinateRegion(
+            center:CLLocationCoordinate2DMake(savedRegion[lat]!, savedRegion[long]!),
+            span: MKCoordinateSpan(latitudeDelta: savedRegion[latDelta]!, longitudeDelta: savedRegion[longDelta]!)
+        )
+        
+        self.map.setRegion(region, animated: false)
+    }
+    
+    func saveMapRegion(){
+        let region = self.map.region
+        NSUserDefaults.standardUserDefaults().setObject([
+            lat : region.center.latitude,
+            long : region.center.longitude,
+            latDelta : region.span.latitudeDelta,
+            longDelta : region.span.longitudeDelta
+            ], forKey: savedMapRegion)
+    }
+    
     func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
         let annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: nil)
         if (!deleteMode){
@@ -149,6 +184,11 @@ class MapVC: UIViewController, MKMapViewDelegate {
         if (!deleteMode){
             print("Segue into AlbumVC and pass view.title")
         }
+    }
+    
+    func mapView(mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        print("map moved.")
+        saveMapRegion()
     }
     
     //CURRENTLY THE APP WILL CRASH BECAUSE I DON'T HAVE THE CODE BELOW FIGURED OUT. AM TRYING OT FIGURE OUT HOW TO GET THE INDEX OF DICTIONARY
