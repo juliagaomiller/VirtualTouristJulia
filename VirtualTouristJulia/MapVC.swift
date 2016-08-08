@@ -193,42 +193,19 @@ class MapVC: UIViewController, MKMapViewDelegate {
 
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
         if (deleteMode) {
-            
-            print("did select annotation view, should be calling function)")
-            
-            //COULD NOT CAST AS 'PIN'; How do I make the Pin.swift file compatible to the view.annotation? Pin.swift inherits from MKAnnotation so it should be accepting it?...
-            let annotation = view.annotation! as! MKAnnotation
-            let pin = annotation as! Pin
-            print(pin)
-            sharedContext.deleteObject(pin)
-            map.removeAnnotation(pin)
-            CoreDataStackManager().sharedInstance().saveContext()
-            
-            //PTD - IS NOT DELETEING FROM SHAREDCONTEXT hmm. Maybe its becuase I'm creating a new Pin in sharedConext, and then its deleted the new pin I just created.
-            //how do I create a reference to the Pin that has already been created with these coordinates?
-            //could try googling swift managedobjectcontext and looking more into it
-            
-//            guard let selectedTitle = view.annotation!.title!
-//                else {
-//                    print("MapVC126-Error.")
-//                    return
-//                }
-//            for (index, _) in locationArray.enumerate() {
-//                let title = locationArray[index]["LocName"]
-//                if selectedTitle == title!{
-//                    print("Index: ", index)
-//                    print(title)
-//                    locationArray.removeAtIndex(index)
-//                    NSUserDefaults.standardUserDefaults().setObject(locationArray, forKey: "locationArray")
-//                    NSUserDefaults().synchronize()
-//                    self.map.removeAnnotation(view.annotation!)
-                    //PTD - CHANGE THIS TO CORE DATA. AND MAKE SURE IS REMOVED.
-//                    return
-//                }
-//            }
+            let selectedTitle = view.annotation?.title!
+            let pins = fetchedResultsController.fetchedObjects as! [Pin]
+            for pin in pins {
+                if selectedTitle! == pin.title!{
+                    print("Deleting ", pin.title!, "pin.")
+                    sharedContext.deleteObject(pin)
+                    CoreDataStackManager().sharedInstance().saveContext()
+                    map.removeAnnotation(view.annotation!)
+                    return
+                }
+            }
         }
     }
-
 }
 
     
