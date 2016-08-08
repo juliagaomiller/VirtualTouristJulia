@@ -16,6 +16,7 @@
 		19A9A38B1D3EC12600721991 /* VirtualTouristJuliaUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19A9A38A1D3EC12600721991 /* VirtualTouristJuliaUITests.swift */; };
 		19A9A3991D3EC1AA00721991 /* MapVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19A9A3981D3EC1AA00721991 /* MapVC.swift */; settings = {ASSET_TAGS = (); }; };
 		19A9A39B1D3EC1B400721991 /* AlbumVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19A9A39A1D3EC1B400721991 /* AlbumVC.swift */; settings = {ASSET_TAGS = (); }; };
+		19B10CAB1D58F7900028AABB /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19B10CAA1D58F7900028AABB /* Photo.swift */; settings = {ASSET_TAGS = (); }; };
 		19D1356F1D4C12B100F7A1E1 /* Pin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19D1356E1D4C12B100F7A1E1 /* Pin.swift */; settings = {ASSET_TAGS = (); }; };
 		19D135711D4FD05100F7A1E1 /* CoreDataStackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19D135701D4FD05100F7A1E1 /* CoreDataStackManager.swift */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
@@ -53,6 +54,7 @@
 		19A9A38C1D3EC12600721991 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		19A9A3981D3EC1AA00721991 /* MapVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapVC.swift; sourceTree = "<group>"; };
 		19A9A39A1D3EC1B400721991 /* AlbumVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlbumVC.swift; sourceTree = "<group>"; };
+		19B10CAA1D58F7900028AABB /* Photo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		19D1356E1D4C12B100F7A1E1 /* Pin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Pin.swift; sourceTree = "<group>"; };
 		19D135701D4FD05100F7A1E1 /* CoreDataStackManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreDataStackManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -109,6 +111,7 @@
 				19A9A3981D3EC1AA00721991 /* MapVC.swift */,
 				19A9A39A1D3EC1B400721991 /* AlbumVC.swift */,
 				19D1356E1D4C12B100F7A1E1 /* Pin.swift */,
+				19B10CAA1D58F7900028AABB /* Photo.swift */,
 				19D135701D4FD05100F7A1E1 /* CoreDataStackManager.swift */,
 				19A9A36B1D3EC12500721991 /* Main.storyboard */,
 				19A9A3711D3EC12500721991 /* Assets.xcassets */,
@@ -267,6 +270,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				19B10CAB1D58F7900028AABB /* Photo.swift in Sources */,
 				19D1356F1D4C12B100F7A1E1 /* Pin.swift in Sources */,
 				19A9A3701D3EC12500721991 /* VirtualTouristJulia.xcdatamodeld in Sources */,
 				19A9A3991D3EC1AA00721991 /* MapVC.swift in Sources */,
