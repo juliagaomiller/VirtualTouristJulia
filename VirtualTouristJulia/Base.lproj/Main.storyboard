@@ -118,10 +118,15 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="XWo-26-o4e"/>
+                    <connections>
+                        <outlet property="collection" destination="rRC-4t-ZjX" id="M9V-74-vZD"/>
+                        <outlet property="collectionView" destination="rRC-4t-ZjX" id="oNl-N3-75q"/>
+                        <outlet property="map" destination="jei-tv-gOx" id="MPN-r5-vfk"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="moP-wi-dTN" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1045" y="1755"/>
+            <point key="canvasLocation" x="1099" y="1787"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="xLS-F8-nEU">

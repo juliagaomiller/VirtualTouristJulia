@@ -59,17 +59,6 @@ class MapVC: UIViewController, MKMapViewDelegate {
         addLongPressRecognizer()
     }
     
-    override func viewWillDisappear(animated: Bool) {
-        super.viewWillDisappear(true)
-        saveMapRegion()
-    }
-    
-    func addLongPressRecognizer(){
-        let longPress = UILongPressGestureRecognizer(target: self, action: "dropAndSavePin:")
-        longPress.minimumPressDuration = 1
-        map.addGestureRecognizer(longPress)
-    }
-    
     lazy var sharedContext: NSManagedObjectContext = {
         return CoreDataStackManager().sharedInstance().managedObjectContext
     }()
@@ -81,8 +70,13 @@ class MapVC: UIViewController, MKMapViewDelegate {
         return frc
     }()
     
+    func addLongPressRecognizer(){
+        let longPress = UILongPressGestureRecognizer(target: self, action: "dropAndSavePin:")
+        longPress.minimumPressDuration = 1
+        map.addGestureRecognizer(longPress)
+    }
+    
     func retrieveAndPlaceSavedPins() {
-        
         let pins = fetchedResultsController.fetchedObjects as! [Pin]
     
         for pin in pins {
@@ -121,12 +115,23 @@ class MapVC: UIViewController, MKMapViewDelegate {
                         }
                         let pin = Pin(lat: Double(coordinate.latitude), long: Double(coordinate.longitude), locName: annotation.title!, context: self.sharedContext)
                         CoreDataStackManager().sharedInstance().saveContext()
+                        self.downloadFlickrPhotosForPin(pin)
                         
                     }
                 })
                 self.map.addAnnotation(annotation)
             }
         }
+    }
+    
+    func downloadFlickrPhotosForPin(pin: Pin) {
+        Flickr.sharedInstance.retrieveParseAndSaveFlickrImageData(pin, completionHandler: {(success, error) in
+            if success {
+                CoreDataStackManager().sharedInstance().saveContext()
+            } else {
+                print(error)
+            }
+        })
     }
     
     @IBAction func enableDelete(sender: AnyObject) {
@@ -146,18 +151,15 @@ class MapVC: UIViewController, MKMapViewDelegate {
     }
     
     func loadMapRegion(){
-        
         guard let savedRegion = NSUserDefaults.standardUserDefaults().objectForKey(savedMapRegion) as? [String:Double]
             else {
                 print("First time app launching.")
                 return
         }
-
         let region = MKCoordinateRegion(
             center:CLLocationCoordinate2DMake(savedRegion[lat]!, savedRegion[long]!),
             span: MKCoordinateSpan(latitudeDelta: savedRegion[latDelta]!, longitudeDelta: savedRegion[longDelta]!)
         )
-        
         self.map.setRegion(region, animated: false)
     }
     
@@ -176,14 +178,17 @@ class MapVC: UIViewController, MKMapViewDelegate {
         if (!deleteMode){
             annotationView.canShowCallout = true
             annotationView.rightCalloutAccessoryView = UIButton(type: .DetailDisclosure)
-        } else { annotationView.canShowCallout = false }
+        } else { annotationView.canShowCallout = false }    //TACTIC DOESN'T WORK. canShowCallout doesn't disable the annotation view when delete mode is on.
         return annotationView
     }
 
     func mapView(mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-        if (!deleteMode){
-            print("Segue into AlbumVC and pass view.title")
-        }
+        let albumVC = storyboard?.instantiateViewControllerWithIdentifier("AlbumVC") as! AlbumVC
+        let pinTitle = view.annotation?.title!
+        albumVC.pin = searchAndFindSavedPinFromTitle(pinTitle!)
+        navigationController!.pushViewController(albumVC, animated: true)
+        //PTD - NEXT TO DO IS TO PREPARE THE ALBUMVC.SWIFT FILE
+        
     }
     
     func mapView(mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
@@ -194,17 +199,23 @@ class MapVC: UIViewController, MKMapViewDelegate {
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
         if (deleteMode) {
             let selectedTitle = view.annotation?.title!
-            let pins = fetchedResultsController.fetchedObjects as! [Pin]
-            for pin in pins {
-                if selectedTitle! == pin.title!{
-                    print("Deleting ", pin.title!, "pin.")
-                    sharedContext.deleteObject(pin)
-                    CoreDataStackManager().sharedInstance().saveContext()
-                    map.removeAnnotation(view.annotation!)
-                    return
-                }
+            let pin = searchAndFindSavedPinFromTitle(selectedTitle!)
+            sharedContext.deleteObject(pin)
+            CoreDataStackManager().sharedInstance().saveContext()
+            map.removeAnnotation(view.annotation!)
+        }
+    }
+    
+    func searchAndFindSavedPinFromTitle(title: String) -> Pin {
+        let fetchedPins = fetchedResultsController.fetchedObjects as! [Pin]
+        var pin: Pin?
+        for x in fetchedPins {
+            if title == x.title {
+                print (x.title)
+                pin = x
             }
         }
+        return pin!
     }
 }
 
