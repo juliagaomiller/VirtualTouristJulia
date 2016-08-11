@@ -70,6 +70,7 @@ class MapVC: UIViewController, MKMapViewDelegate {
         return frc
     }()
     
+    
     func addLongPressRecognizer(){
         let longPress = UILongPressGestureRecognizer(target: self, action: "dropAndSavePin:")
         longPress.minimumPressDuration = 1
@@ -115,23 +116,38 @@ class MapVC: UIViewController, MKMapViewDelegate {
                         }
                         let pin = Pin(lat: Double(coordinate.latitude), long: Double(coordinate.longitude), locName: annotation.title!, context: self.sharedContext)
                         CoreDataStackManager().sharedInstance().saveContext()
-                        self.downloadFlickrPhotosForPin(pin)
+                        Flickr.sharedInstance.retrieveParseAndSaveTwelveFlickrImages(pin, completionHandler: { (success, error) -> Void in
+                            
+                            if (error != "") {
+                                //print the error
+                            }
+                            else if (success) {
+                                let fr = NSFetchRequest(entityName: "Photo")
+                                fr.sortDescriptors = []
+                                fr.predicate = NSPredicate(format: "pin == %@", pin)
+                                let frc = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: self.sharedContext, sectionNameKeyPath: nil, cacheName: nil)
+                                do {
+                                    try frc.performFetch()
+                                }
+                                catch {
+                                    abort()
+                                }
+                                let photos = frc.fetchedObjects! 
+                                print("Number of photos: ", photos.count) //hmm.. am only retrieving one photo for some reason.
+                                for p in photos {
+                                    print(p.url!)
+                                }
+                                
+                                
+                                //send to album vc that 'busy activity indicator' doesn't need to be activated and that all the images can be directly loaded.
+                            }
+                        })
                         
                     }
                 })
                 self.map.addAnnotation(annotation)
             }
         }
-    }
-    
-    func downloadFlickrPhotosForPin(pin: Pin) {
-        Flickr.sharedInstance.retrieveParseAndSaveFlickrImageData(pin, completionHandler: {(success, error) in
-            if success {
-                CoreDataStackManager().sharedInstance().saveContext()
-            } else {
-                print(error)
-            }
-        })
     }
     
     @IBAction func enableDelete(sender: AnyObject) {
