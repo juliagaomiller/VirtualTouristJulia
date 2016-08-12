@@ -94,7 +94,7 @@
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="bZ7-R7-qRz">
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" restorationIdentifier="Cell" id="bZ7-R7-qRz" userLabel="PhotoCell" customClass="PhotoCell" customModule="VirtualTouristJulia" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
@@ -119,7 +119,6 @@
                     </view>
                     <navigationItem key="navigationItem" id="XWo-26-o4e"/>
                     <connections>
-                        <outlet property="collection" destination="rRC-4t-ZjX" id="M9V-74-vZD"/>
                         <outlet property="collectionView" destination="rRC-4t-ZjX" id="oNl-N3-75q"/>
                         <outlet property="map" destination="jei-tv-gOx" id="MPN-r5-vfk"/>
                     </connections>
