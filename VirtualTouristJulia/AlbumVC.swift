@@ -62,12 +62,22 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
             else {
                 print("AlbumVC: 12 new photos have been downloaded successfully")
                 
+                //then there is this looong pause before the collection view reappears an d
+                //when i run through the code, it shows that
+                
                 self.collectionView.hidden = false
                 self.downloadingLabel.hidden = true
                 self.activityIndicator.hidden = true
                 self.activityIndicator.stopAnimating()
+                self.newCollectionBtn.enabled = true
                 
-                self.collectionView.reloadData()
+                print("Activity indicator and label should now be hidden")
+                
+                //why is there this loong pause before the statements above show on the simulator
+                
+                //self.collectionView.reloadData()
+                
+                //the compiler runs throught the code but there is a looong pause before the simulator shows the collectionView is no longer hidden
                 
                 //collectionView.reloadData() works, but takes waay longer than it should.
                 //On the other hand, if I segue back into the mapVC and then reload the AlbumVC, the new photos load up immediately.
