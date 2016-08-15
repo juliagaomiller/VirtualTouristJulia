@@ -44,7 +44,7 @@ class Flickr {
                     print("Error parsing JSON data (2).")
                     return
             }
-            print("number of urls retrieved: ", photos.count)
+            print("Flickr.swift: number of urls retrieved: ", photos.count)
             for p in photos {
                 guard let url = p["url_m"] as? String else {
                     print("Could not find 'url_m' in parsed data")
@@ -59,25 +59,10 @@ class Flickr {
         task.resume()
         
     }
-    
     func getImageData(urlString: String) -> NSData {
         let url = NSURL(string: urlString)
         let imageData = NSData(contentsOfURL: url!)!
         
         return imageData
     }
-    
-//    func downloadImageData(url: String, completionHandler: (imageData: NSData!, error: String) -> Void) {
-//        let task = NSURLSession.sharedSession().dataTaskWithURL(NSURL(string: url)!) {(data, response, error) in
-//            guard let data = data else {
-//            completionHandler(imageData: nil, error: "Error downloading Flickr image: \(error)")
-//                return
-//            }
-//            completionHandler(imageData: data, error: "")
-//        }
-//        task.resume()
-//    }
-    
-    
-    
 }

@@ -13,6 +13,10 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
     @IBOutlet weak var map: MKMapView!
     @IBOutlet weak var collectionView: UICollectionView!
     
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    @IBOutlet weak var downloadingLabel: UILabel!
+    @IBOutlet weak var newCollectionBtn: UIBarButtonItem!
+    
     var pin: Pin!
     
     lazy var sharedContext: NSManagedObjectContext = {
@@ -28,10 +32,50 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
     }()
     
     override func viewDidLoad() {
+        activityIndicator.hidden = true
+        downloadingLabel.hidden = true
+        
         collectionView.delegate = self
         collectionView.dataSource = self
+        
         setupMap(pin.coordinate, span: 0.5)
         fetchSavedPhotos()
+    }
+    
+    @IBAction func downloadTwelveNewPhotos(sender: AnyObject) {
+        newCollectionBtn.enabled = false
+        collectionView.hidden = true
+        downloadingLabel.hidden = false
+        activityIndicator.hidden = false
+        activityIndicator.startAnimating()
+        
+        for photo in frc.fetchedObjects! as! [Photo] {
+            sharedContext.deleteObject(photo)
+        }
+        
+        CoreDataStackManager().sharedInstance().saveContext()
+        Flickr.sharedInstance.retrieveParseAndSaveTwelveFlickrImages(pin) { (success, error) -> Void in
+            if error != "" {
+                print("AlbumVC: Error retrieving twelve new photos.")
+                return
+            }
+            else {
+                print("AlbumVC: 12 new photos have been downloaded successfully")
+                
+                self.collectionView.hidden = false
+                self.downloadingLabel.hidden = true
+                self.activityIndicator.hidden = true
+                self.activityIndicator.stopAnimating()
+                
+                self.collectionView.reloadData()
+                
+                //collectionView.reloadData() works, but takes waay longer than it should.
+                //On the other hand, if I segue back into the mapVC and then reload the AlbumVC, the new photos load up immediately.
+                //Am brain stuck.
+                
+                //PTD USE THE NSFETCHEDRESULTSCONTROLLERDELEGATE instead; look at Mikael's project
+            }
+        }
     }
     
     func setupMap(coordinate: CLLocationCoordinate2D, span: CLLocationDegrees){
@@ -51,18 +95,26 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
         }
     }
     
-    //NOT SURE WHAT THESE TWO DO
+    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+        print("AlbumVC: Clicked an image.")
+        let selectedCell = collectionView.cellForItemAtIndexPath(indexPath) as! PhotoCell
+        selectedCell.imageView.image = nil
+        selectedCell.activityIndicator.hidden = false
+        selectedCell.activityIndicator.startAnimating()
+    }
+    
     func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
+        //print("number of sections: ", (frc.sections?.count)!)
         return (frc.sections?.count)!
     }
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let section = frc.sections![section]
-        return section.numberOfObjects
+        let numberOfFrcObjects = frc.sections![section].numberOfObjects
+        //print("number of items in section: ", section.numberOfObjects)
+        return numberOfFrcObjects
     }
 
-    
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("Cell", forIndexPath: indexPath) as! PhotoCell
+        let cell = collectionView.dequeueReusableCellWithReuseIdentifier("AlbumVCCell", forIndexPath: indexPath) as! PhotoCell
         configureCell(cell, indexPath: indexPath)
         return cell
     }
@@ -74,9 +126,18 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
             return
         }
         cell.imageView.image = UIImage(data: data)
-        
+        cell.activityIndicator.hidden = true
+    }
+}
+
+extension AlbumVC: UICollectionViewDelegateFlowLayout {
+    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
+        let x = (self.view.frame.width/2 - 10)
+        return CGSize(width: x, height: x)
     }
     
-    
-    
+    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAtIndex section: Int) -> UIEdgeInsets {
+        let x: CGFloat = 5
+        return UIEdgeInsets(top: x, left: x, bottom: x, right: x)
+    }
 }

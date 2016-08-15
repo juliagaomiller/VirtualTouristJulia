@@ -5,22 +5,6 @@
 //  Created by Julia Miller on 7/19/16.
 //  Copyright © 2016 Julia Miller. All rights reserved.
 
-//PTD NEXT TIME: CREATE THE PIN.SWIFT FILE AND HAVE SO THAT THE ARRAY OF PIN[] IS SAVED IN CORE DATA 
-//EVERY TIME A PIN IS PLACED, YOU SEND A REQUEST TO SAVE 9 IMAGES FROM FLICKR
-//REREAD REQUIREMENTS
-//TRY TO DUPLICATE CODE FROM OTHER PROJECTS AND EXPLAIN WHY IT WORKS. 
-//SAVE PIN IN CORE DATA.
-//RELOOK AT NOTES.
-//IF THERE IS ANYTHING YOU DON'T UNDERSTAND IN THE OTHER PROJECT'S CODE, IT MEANS THAT YOUR FOUNDATIONAL KNOWLEDGE IS NOT STRONG ENOUGH. ALWAYS COMPARE 2 OTHER PROJECTS TO SEE SIMILARITIES AND LEARN THIS COMMON TRAITS.
-//FILE OPEN RECENT.
-
-//***********//
-//SAVE PIN TITLE AND LAT AND LONG INTO CORE DATA INSTEAD OF NSUSERDEFAULTS, THEN CREATE THE FLICKR SEARCH
-
-//PTD LEARNING - LEARN MORE ABOUT SHARED INSTANCES
-
-//SWTICH TO ALBUM WHEN YOU PRESS ON A PIN. 
-
 import Foundation
 import UIKit
 import MapKit
@@ -35,6 +19,7 @@ class MapVC: UIViewController, MKMapViewDelegate {
     
     var doneBtn: UIBarButtonItem!
     var deleteMode = false
+    var allPhotosDownloaded = true
     
     let lat = "latitude"
     let long = "longitude"
@@ -45,14 +30,8 @@ class MapVC: UIViewController, MKMapViewDelegate {
     override func viewDidLoad() {
         doneBtn = UIBarButtonItem(title: "Done", style: UIBarButtonItemStyle.Plain, target: self, action: "disablePinDelete")
         map.delegate = self
-
-        do {
-            try fetchedResultsController.performFetch()
-        }
-        catch {
-            abort()
-        }
         
+        fetchResultsFromCoreData()
         loadMapRegion()
         disablePinDelete()
         retrieveAndPlaceSavedPins()
@@ -69,6 +48,15 @@ class MapVC: UIViewController, MKMapViewDelegate {
         let frc = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: self.sharedContext, sectionNameKeyPath: nil, cacheName: nil)
         return frc
     }()
+    
+    func fetchResultsFromCoreData(){
+        do {
+            try fetchedResultsController.performFetch()
+        }
+        catch {
+            abort()
+        }
+    }
     
     
     func addLongPressRecognizer(){
@@ -91,6 +79,7 @@ class MapVC: UIViewController, MKMapViewDelegate {
     }
     
     func dropAndSavePin(touch: UIGestureRecognizer){
+        self.allPhotosDownloaded = false
         if (!deleteMode){
             if touch.state == UIGestureRecognizerState.Began {
                 let point = touch.locationInView(map)
@@ -122,23 +111,8 @@ class MapVC: UIViewController, MKMapViewDelegate {
                                 //print the error
                             }
                             else if (success) {
-                                let fr = NSFetchRequest(entityName: "Photo")
-                                fr.sortDescriptors = []
-                                fr.predicate = NSPredicate(format: "pin == %@", pin)
-                                let frc = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: self.sharedContext, sectionNameKeyPath: nil, cacheName: nil)
-                                do {
-                                    try frc.performFetch()
-                                }
-                                catch {
-                                    abort()
-                                }
-                                let photos = frc.fetchedObjects! 
-                                print("Number of photos: ", photos.count) //hmm.. am only retrieving one photo for some reason.
-                                for p in photos {
-                                    print(p.url!)
-                                }
-                                
-                                
+                                print("12 photos have been downloaded and saved into Core Data")
+                                self.allPhotosDownloaded = true
                                 //send to album vc that 'busy activity indicator' doesn't need to be activated and that all the images can be directly loaded.
                             }
                         })
@@ -199,12 +173,16 @@ class MapVC: UIViewController, MKMapViewDelegate {
     }
 
     func mapView(mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
-        let albumVC = storyboard?.instantiateViewControllerWithIdentifier("AlbumVC") as! AlbumVC
-        let pinTitle = view.annotation?.title!
-        albumVC.pin = searchAndFindSavedPinFromTitle(pinTitle!)
-        navigationController!.pushViewController(albumVC, animated: true)
-        //PTD - NEXT TO DO IS TO PREPARE THE ALBUMVC.SWIFT FILE
-        
+        if (allPhotosDownloaded){
+            let albumVC = storyboard?.instantiateViewControllerWithIdentifier("AlbumVC") as! AlbumVC
+            let pinTitle = view.annotation?.title!
+            //print(pinTitle)
+            albumVC.pin = searchAndFindSavedPinFromTitle(pinTitle!)
+            //print(albumVC.pin.title)
+            navigationController!.pushViewController(albumVC, animated: true)
+        } else {
+            print("photos haven't finished downloading yet!")
+        }
     }
     
     func mapView(mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
@@ -216,22 +194,26 @@ class MapVC: UIViewController, MKMapViewDelegate {
         if (deleteMode) {
             let selectedTitle = view.annotation?.title!
             let pin = searchAndFindSavedPinFromTitle(selectedTitle!)
-            sharedContext.deleteObject(pin)
+            sharedContext.deleteObject(pin!)
             CoreDataStackManager().sharedInstance().saveContext()
             map.removeAnnotation(view.annotation!)
         }
     }
     
-    func searchAndFindSavedPinFromTitle(title: String) -> Pin {
-        let fetchedPins = fetchedResultsController.fetchedObjects as! [Pin]
+    func searchAndFindSavedPinFromTitle(title: String) -> Pin? {
         var pin: Pin?
+        fetchResultsFromCoreData()
+        guard let fetchedPins = fetchedResultsController.fetchedObjects as? [Pin] else {
+            print("Fetched objects is still empty")
+            return pin
+        }
         for x in fetchedPins {
             if title == x.title {
                 print (x.title)
                 pin = x
             }
         }
-        return pin!
+        return pin
     }
 }
 

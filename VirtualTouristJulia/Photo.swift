@@ -1,6 +1,7 @@
 import UIKit
 import CoreData
 
+@objc(Photo)
 class Photo: NSManagedObject {
     
     @NSManaged var url: String?
@@ -14,11 +15,4 @@ class Photo: NSManagedObject {
         self.imageData = data
         self.pin = selectedPin
     }
-    
-//    func getImageData() -> NSData {
-//        let imageNSURL = NSURL(string: url!)
-//        self.imageData = NSData(contentsOfURL: imageNSURL!)!
-//        
-//        return imageData!
-//    }
 }

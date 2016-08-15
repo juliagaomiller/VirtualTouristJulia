@@ -88,39 +88,91 @@
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="rRC-4t-ZjX">
                                 <rect key="frame" x="0.0" y="191" width="600" height="409"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="0qo-gu-fuv">
-                                    <size key="itemSize" width="50" height="50"/>
+                                    <size key="itemSize" width="100" height="100"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                 </collectionViewFlowLayout>
                                 <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" restorationIdentifier="Cell" id="bZ7-R7-qRz" userLabel="PhotoCell" customClass="PhotoCell" customModule="VirtualTouristJulia" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" restorationIdentifier="Cell" reuseIdentifier="AlbumVCCell" id="bZ7-R7-qRz" userLabel="PhotoCell" customClass="PhotoCell" customModule="VirtualTouristJulia" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                            <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="100" height="100"/>
                                             <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="OWq-tP-n0e">
+                                                    <rect key="frame" x="5" y="5" width="90" height="90"/>
+                                                </imageView>
+                                                <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="ZH5-OJ-dHR">
+                                                    <rect key="frame" x="40" y="40" width="20" height="20"/>
+                                                </activityIndicatorView>
+                                            </subviews>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         </view>
+                                        <constraints>
+                                            <constraint firstItem="OWq-tP-n0e" firstAttribute="leading" secondItem="bZ7-R7-qRz" secondAttribute="leading" constant="5" id="NCQ-RR-9o6"/>
+                                            <constraint firstItem="OWq-tP-n0e" firstAttribute="top" secondItem="bZ7-R7-qRz" secondAttribute="top" constant="5" id="WdX-9x-QgJ"/>
+                                            <constraint firstItem="ZH5-OJ-dHR" firstAttribute="centerX" secondItem="bZ7-R7-qRz" secondAttribute="centerX" id="kTJ-KL-3Ak"/>
+                                            <constraint firstAttribute="trailing" secondItem="OWq-tP-n0e" secondAttribute="trailing" constant="5" id="miA-6F-cgU"/>
+                                            <constraint firstItem="ZH5-OJ-dHR" firstAttribute="centerY" secondItem="bZ7-R7-qRz" secondAttribute="centerY" id="od9-F1-2WG"/>
+                                            <constraint firstAttribute="bottom" secondItem="OWq-tP-n0e" secondAttribute="bottom" constant="5" id="uLK-pg-Gl1"/>
+                                        </constraints>
+                                        <connections>
+                                            <outlet property="activityIndicator" destination="ZH5-OJ-dHR" id="aNp-yn-Wg1"/>
+                                            <outlet property="imageView" destination="OWq-tP-n0e" id="gy2-oZ-sBI"/>
+                                        </connections>
                                     </collectionViewCell>
                                 </cells>
                             </collectionView>
+                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OEw-nI-mir">
+                                <rect key="frame" x="0.0" y="556" width="600" height="44"/>
+                                <items>
+                                    <barButtonItem style="plain" systemItem="flexibleSpace" id="YT3-0X-nJ6"/>
+                                    <barButtonItem title="New Collection" id="iu5-zP-IQF">
+                                        <connections>
+                                            <action selector="downloadTwelveNewPhotos:" destination="ish-I0-10q" id="2k2-G6-lGG"/>
+                                        </connections>
+                                    </barButtonItem>
+                                    <barButtonItem style="plain" systemItem="flexibleSpace" id="krb-Tw-Whk"/>
+                                </items>
+                            </toolbar>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="DQI-Nx-zy3">
+                                <rect key="frame" x="282" y="419" width="37" height="37"/>
+                                <color key="color" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                            </activityIndicatorView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Downloading new images..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uXv-1q-wfM">
+                                <rect key="frame" x="196" y="465" width="209" height="21"/>
+                                <fontDescription key="fontDescription" type="italicSystem" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="trailingMargin" secondItem="jei-tv-gOx" secondAttribute="trailing" constant="-20" id="670-Y7-Ji7"/>
+                            <constraint firstItem="ati-ov-Fdb" firstAttribute="top" secondItem="OEw-nI-mir" secondAttribute="bottom" id="9tD-px-rfN"/>
+                            <constraint firstItem="OEw-nI-mir" firstAttribute="top" secondItem="DQI-Nx-zy3" secondAttribute="bottom" constant="100" id="EzO-Ib-86P"/>
                             <constraint firstItem="ati-ov-Fdb" firstAttribute="top" secondItem="rRC-4t-ZjX" secondAttribute="bottom" id="Fka-MY-5r6"/>
                             <constraint firstAttribute="trailingMargin" secondItem="rRC-4t-ZjX" secondAttribute="trailing" constant="-20" id="Gpz-IG-Vp2"/>
                             <constraint firstItem="rRC-4t-ZjX" firstAttribute="top" secondItem="jei-tv-gOx" secondAttribute="bottom" constant="1" id="J27-md-1zX"/>
+                            <constraint firstItem="DQI-Nx-zy3" firstAttribute="centerX" secondItem="dRn-zT-O8Q" secondAttribute="centerX" id="LMx-O9-Cgd"/>
                             <constraint firstItem="jei-tv-gOx" firstAttribute="leading" secondItem="dRn-zT-O8Q" secondAttribute="leadingMargin" constant="-20" id="QJB-UB-oiy"/>
                             <constraint firstItem="jei-tv-gOx" firstAttribute="top" secondItem="Bxb-xC-41i" secondAttribute="bottom" id="U9v-q5-RtG"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="OEw-nI-mir" secondAttribute="trailing" constant="-20" id="aMq-wz-iBg"/>
+                            <constraint firstItem="OEw-nI-mir" firstAttribute="leading" secondItem="dRn-zT-O8Q" secondAttribute="leadingMargin" constant="-20" id="h3L-Y4-8Zh"/>
+                            <constraint firstItem="OEw-nI-mir" firstAttribute="top" secondItem="uXv-1q-wfM" secondAttribute="bottom" constant="70" id="kQf-Pe-v79"/>
+                            <constraint firstItem="uXv-1q-wfM" firstAttribute="centerX" secondItem="dRn-zT-O8Q" secondAttribute="centerX" id="rpC-kd-Po4"/>
                             <constraint firstItem="rRC-4t-ZjX" firstAttribute="leading" secondItem="dRn-zT-O8Q" secondAttribute="leadingMargin" constant="-20" id="zEJ-5f-eJ0"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="XWo-26-o4e"/>
                     <connections>
+                        <outlet property="activityIndicator" destination="DQI-Nx-zy3" id="t2k-Pi-KAY"/>
                         <outlet property="collectionView" destination="rRC-4t-ZjX" id="oNl-N3-75q"/>
+                        <outlet property="downloadingLabel" destination="uXv-1q-wfM" id="2Nm-vn-dZt"/>
                         <outlet property="map" destination="jei-tv-gOx" id="MPN-r5-vfk"/>
+                        <outlet property="newCollectionBtn" destination="iu5-zP-IQF" id="Iyp-oI-g4x"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="moP-wi-dTN" userLabel="First Responder" sceneMemberID="firstResponder"/>
