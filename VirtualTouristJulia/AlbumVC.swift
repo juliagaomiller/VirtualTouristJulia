@@ -44,7 +44,7 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
     
     @IBAction func downloadTwelveNewPhotos(sender: AnyObject) {
         newCollectionBtn.enabled = false
-        collectionView.hidden = true
+//        collectionView.hidden = true
         downloadingLabel.hidden = false
         activityIndicator.hidden = false
         activityIndicator.startAnimating()
@@ -65,7 +65,7 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
                 //then there is this looong pause before the collection view reappears an d
                 //when i run through the code, it shows that
                 
-                self.collectionView.hidden = false
+//                self.collectionView.hidden = false
                 self.downloadingLabel.hidden = true
                 self.activityIndicator.hidden = true
                 self.activityIndicator.stopAnimating()
@@ -75,7 +75,7 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
                 
                 //why is there this loong pause before the statements above show on the simulator
                 
-                //self.collectionView.reloadData()
+                self.collectionView.reloadData()
                 
                 //the compiler runs throught the code but there is a looong pause before the simulator shows the collectionView is no longer hidden
                 
