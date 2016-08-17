@@ -15,8 +15,6 @@ class AlbumVC: UIViewController {
     @IBOutlet weak var map: MKMapView!
     @IBOutlet weak var collectionView: UICollectionView!
     
-    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
-    @IBOutlet weak var downloadingLabel: UILabel!
     @IBOutlet weak var toolbarBtn: UIBarButtonItem!
     
     let newCollection = "New Collection"
@@ -43,8 +41,7 @@ class AlbumVC: UIViewController {
     }()
     
     override func viewDidLoad() {
-        activityIndicator.hidden = true
-        downloadingLabel.hidden = true
+        frc.delegate = self
         
         collectionView.delegate = self
         collectionView.dataSource = self
@@ -78,13 +75,12 @@ class AlbumVC: UIViewController {
         }
         else {
             deleteAllAndDownloadTwelveNewImages()
-        } //RemoveAllPhotos() and DownloadTwelveNewPhotos
+        }
     }
     
     func deleteSelectedPhotos(){
         for index in selectedIndexPaths {
             let photo = frc.objectAtIndexPath(index) as! Photo
-            print("deleted: ", photo.url)
             sharedContext.deleteObject(photo)
         }
         CoreDataStackManager().sharedInstance().saveContext()
@@ -94,11 +90,8 @@ class AlbumVC: UIViewController {
     }
     
     func deleteAllAndDownloadTwelveNewImages(){
+        toolbarBtn.title = "Downloading new images..."
         toolbarBtn.enabled = false
-        collectionView.hidden = true
-        downloadingLabel.hidden = false
-        activityIndicator.hidden = false
-        activityIndicator.startAnimating()
         
         for photo in frc.fetchedObjects! as! [Photo] {
             sharedContext.deleteObject(photo)
@@ -111,17 +104,11 @@ class AlbumVC: UIViewController {
                 return
             }
             else {
-                print("AlbumVC: 12 new photos have been downloaded successfully")
-                
-                self.collectionView.hidden = false
-                self.downloadingLabel.hidden = true
-                self.activityIndicator.hidden = true
-                self.activityIndicator.stopAnimating()
-                self.toolbarBtn.enabled = true
-                
-                print("Activity indicator and label should now be hidden")
-                
-                self.collectionView.reloadData()
+                print("AlbumVC: NewCollection download successful!")
+                performUIUpdatesOnMain({ () -> Void in
+                    self.toolbarBtn.enabled = true
+                    self.updateToolbarButton()
+                })
             }
         }
     }
@@ -136,35 +123,48 @@ class AlbumVC: UIViewController {
 extension AlbumVC: NSFetchedResultsControllerDelegate {
     
     func controllerWillChangeContent(controller: NSFetchedResultsController) {
-        print("controllerWillChangeContent")
         insertedIndexPaths = [NSIndexPath]()
         updatedIndexPaths = [NSIndexPath]()
         deletedIndexPaths = [NSIndexPath]()
     }
     
     func controllerDidChangeContent(controller: NSFetchedResultsController) {
-        print("ControllerDidChangeContent")
-        
+        collectionView.performBatchUpdates({ () -> Void in
+            self.collectionView.insertItemsAtIndexPaths(self.insertedIndexPaths)
+            self.collectionView.deleteItemsAtIndexPaths(self.deletedIndexPaths)
+            self.collectionView.reloadItemsAtIndexPaths(self.updatedIndexPaths)
+        }, completion: nil)
     }
     
     func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
-        print("controller, didChangeObject")
+        switch type {
+            
+        case .Insert:
+            insertedIndexPaths.append(newIndexPath!)
+        case .Delete:
+            deletedIndexPaths.append(indexPath!)
+        case .Update:
+            updatedIndexPaths.append(newIndexPath!)
+        default:
+            return
+        }
     }
     
 }
 
-
 extension AlbumVC: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
-        let selectedCell = collectionView.cellForItemAtIndexPath(indexPath) as! PhotoCell
-        if let index = selectedIndexPaths.indexOf(indexPath) {
-            selectedIndexPaths.removeAtIndex(index)
-            updateToolbarButton()
-            selectedCell.alpha = 1
-        } else {
-            selectedIndexPaths.append(indexPath)
-            updateToolbarButton()
-            selectedCell.alpha = 0.5
+        if toolbarBtn.enabled == true {
+            let selectedCell = collectionView.cellForItemAtIndexPath(indexPath) as! PhotoCell
+            if let index = selectedIndexPaths.indexOf(indexPath) {
+                selectedIndexPaths.removeAtIndex(index)
+                updateToolbarButton()
+                selectedCell.alpha = 1
+            } else {
+                selectedIndexPaths.append(indexPath)
+                updateToolbarButton()
+                selectedCell.alpha = 0.5
+            }
         }
     }
     

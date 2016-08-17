@@ -44,18 +44,23 @@ class Flickr {
                     print("Error parsing JSON data (2).")
                     return
             }
-            print(photos)
-            print("Flickr.swift: number of urls retrieved: ", photos.count)
-            for p in photos {
-                guard let url = p["url_m"] as? String else {
-                    print("Could not find 'url_m' in parsed data")
-                    return
+            print("Flickr: number of urls retrieved: ", photos.count)
+            if photos.count != 0 {
+                for p in photos {
+                    guard let url = p["url_m"] as? String else {
+                        print("Could not find 'url_m' in parsed data")
+                        return
+                    }
+                    let imageData = self.getImageData(url)
+                    let _ = Photo(urlString: url, data: imageData, selectedPin: pin, context: self.sharedContext)
+                    CoreDataStackManager().sharedInstance().saveContext()
                 }
-                let imageData = self.getImageData(url)
-                let _ = Photo(urlString: url, data: imageData, selectedPin: pin, context: self.sharedContext)
-                CoreDataStackManager().sharedInstance().saveContext()
+                completionHandler(success: true, error: "")
             }
-            completionHandler(success: true, error: "")
+            else {
+                completionHandler(success: false, error: Constants.noUrlsRetrieved)
+            }
+            
         }
         task.resume()
         

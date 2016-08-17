@@ -8,6 +8,7 @@ class Pin: NSManagedObject, MKAnnotation {
     @NSManaged var latitude:NSNumber
     @NSManaged var longitude:NSNumber
     @NSManaged var title:String?
+    @NSManaged var error:String?
     
     convenience init(lat: Double, long: Double, locName: String, context: NSManagedObjectContext) {
         let entity = NSEntityDescription.entityForName("Pin", inManagedObjectContext: context)!

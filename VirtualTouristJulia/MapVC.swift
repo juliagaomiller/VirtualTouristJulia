@@ -15,9 +15,8 @@ class MapVC: UIViewController, MKMapViewDelegate {
     @IBOutlet weak var map: MKMapView!
     @IBOutlet weak var deleteView: UIView!
     @IBOutlet weak var deleteLabel: UILabel!
-    @IBOutlet weak var editBtn: UIBarButtonItem!
+    @IBOutlet weak var navigationBtn: UIBarButtonItem!
     
-    var doneBtn: UIBarButtonItem!
     var deleteMode = false
     var allPhotosDownloaded = true
     
@@ -26,28 +25,47 @@ class MapVC: UIViewController, MKMapViewDelegate {
     let latDelta = "latDelta"
     let longDelta = "longDelta"
     let savedMapRegion = "savedMapRegion"
-    
-    override func viewDidLoad() {
-        doneBtn = UIBarButtonItem(title: "Done", style: UIBarButtonItemStyle.Plain, target: self, action: "disablePinDelete")
-        map.delegate = self
-        
-        fetchResultsFromCoreData()
-        loadMapRegion()
-        disablePinDelete()
-        retrieveAndPlaceSavedPins()
-        addLongPressRecognizer()
-    }
+    let activateDelete = "Edit"
+    let deleteModeOn = "Done"
     
     lazy var sharedContext: NSManagedObjectContext = {
         return CoreDataStackManager().sharedInstance().managedObjectContext
-    }()
+        }()
     
     lazy var fetchedResultsController: NSFetchedResultsController = {
         let fr = NSFetchRequest(entityName: "Pin")
         fr.sortDescriptors = []
         let frc = NSFetchedResultsController(fetchRequest: fr, managedObjectContext: self.sharedContext, sectionNameKeyPath: nil, cacheName: nil)
         return frc
-    }()
+        }()
+    
+    override func viewDidLoad() {
+        map.delegate = self
+        navigationBtn.title = activateDelete
+        deleteView.hidden = true
+        deleteLabel.hidden = true
+        
+        fetchResultsFromCoreData()
+        loadMapRegion()
+        retrieveAndPlaceSavedPins()
+        addLongPressRecognizer()
+    }
+    
+    @IBAction func rightNavigationBtn(sender: AnyObject) {
+        if sender.title == activateDelete {
+            navigationBtn.title = deleteModeOn
+            deleteView.hidden = false
+            deleteLabel.hidden = false
+            deleteMode = true
+        }
+        else {
+            navigationBtn.title = activateDelete
+            deleteView.hidden = true
+            deleteLabel.hidden = true
+            deleteMode = false
+            
+        }
+    }
     
     func fetchResultsFromCoreData(){
         do {
@@ -57,7 +75,6 @@ class MapVC: UIViewController, MKMapViewDelegate {
             abort()
         }
     }
-    
     
     func addLongPressRecognizer(){
         let longPress = UILongPressGestureRecognizer(target: self, action: "dropAndSavePin:")
@@ -97,26 +114,30 @@ class MapVC: UIViewController, MKMapViewDelegate {
                         let pm = placemark![0] as CLPlacemark
                         if pm.administrativeArea != nil && pm.locality != nil {
                             annotation.title = "\(pm.locality!), \(pm.administrativeArea!)"
-                        } else {
-                            annotation.title = "Unknown Location"
-                            print("MapVC68: Pin is outside of U.S.")
+                        } else if let country = pm.country {
+                            annotation.title = String(country)
                             //PTD - print pm and check where ocean is located
                             //PTD - check pm and check how to write city and country of foreign country
+                        } else if let ocean = pm.ocean {
+                            annotation.title = String(ocean)
+                        }
+                        else {
+                            annotation.title = "Unknown region."
                         }
                         let pin = Pin(lat: Double(coordinate.latitude), long: Double(coordinate.longitude), locName: annotation.title!, context: self.sharedContext)
-                        CoreDataStackManager().sharedInstance().saveContext()
                         Flickr.sharedInstance.retrieveParseAndSaveTwelveFlickrImages(pin, completionHandler: { (success, error) -> Void in
                             
-                            if (error != "") {
-                                //print the error
-                            }
-                            else if (success) {
-                                print("12 photos have been downloaded and saved into Core Data")
+                            if (!success) {
+                                print("MapVC: ", error)
+                                if error == Constants.noUrlsRetrieved {
+                                    pin.error = error
+                                }
+                            } else {
+                                print("MapVC: 12 photos have been downloaded and saved into Core Data")
                                 self.allPhotosDownloaded = true
-                                //send to album vc that 'busy activity indicator' doesn't need to be activated and that all the images can be directly loaded.
                             }
                         })
-                        
+                        CoreDataStackManager().sharedInstance().saveContext()
                     }
                 })
                 self.map.addAnnotation(annotation)
@@ -124,26 +145,28 @@ class MapVC: UIViewController, MKMapViewDelegate {
         }
     }
     
-    @IBAction func enableDelete(sender: AnyObject) {
-        deleteMode = true
-        deleteLabel.hidden = false
-        deleteView.hidden = false
-        self.navigationItem.rightBarButtonItem = doneBtn
-    }
-    
-    func disablePinDelete() {
-        deleteMode = false
-        deleteLabel.hidden = true
-        deleteView.hidden = true
-        self.navigationItem.rightBarButtonItem = editBtn
-        //print("MapVC105: The right bar button item is: ", self.navigationItem.rightBarButtonItem?.title)
-        //PTD - Figure out why the edit button isn't showing back up again when you press Done.
+    func showAlertViewController(error: String) {
+        let alert = UIAlertController(title: nil, message: error, preferredStyle: .Alert)
+        if error == Constants.noUrlsRetrieved {
+            let OKAction = UIAlertAction(title: "OK", style: .Default, handler: { (UIAlertAction) -> Void in
+            })
+            alert.addAction(OKAction)
+            self.presentViewController(alert, animated: true, completion: nil)
+        }
+        if error == Constants.photosNotDoneDownloading {
+            self.presentViewController(alert, animated: true, completion: nil)
+            let delay = 1.0 * Double(NSEC_PER_SEC)
+            let time = dispatch_time(DISPATCH_TIME_NOW, Int64(delay))
+            dispatch_after(time, dispatch_get_main_queue(), {
+                alert.dismissViewControllerAnimated(true, completion: nil)
+            })
+        }
     }
     
     func loadMapRegion(){
         guard let savedRegion = NSUserDefaults.standardUserDefaults().objectForKey(savedMapRegion) as? [String:Double]
             else {
-                print("First time app launching.")
+                print("MapVC: First time app launching.")
                 return
         }
         let region = MKCoordinateRegion(
@@ -165,23 +188,23 @@ class MapVC: UIViewController, MKMapViewDelegate {
     
     func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
         let annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: nil)
-        if (!deleteMode){
-            annotationView.canShowCallout = true
-            annotationView.rightCalloutAccessoryView = UIButton(type: .DetailDisclosure)
-        } else { annotationView.canShowCallout = false }    //TACTIC DOESN'T WORK. canShowCallout doesn't disable the annotation view when delete mode is on.
+        annotationView.canShowCallout = true
+        annotationView.rightCalloutAccessoryView = UIButton(type: .DetailDisclosure)
         return annotationView
     }
 
     func mapView(mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        let pinTitle = view.annotation?.title!
+        let pin: Pin? = searchAndFindSavedPinFromTitle(pinTitle!)
         if (allPhotosDownloaded){
             let albumVC = storyboard?.instantiateViewControllerWithIdentifier("AlbumVC") as! AlbumVC
-            let pinTitle = view.annotation?.title!
-            //print(pinTitle)
-            albumVC.pin = searchAndFindSavedPinFromTitle(pinTitle!)
-            //print(albumVC.pin.title)
+            albumVC.pin = pin
             navigationController!.pushViewController(albumVC, animated: true)
+        } else if (pin?.error != nil) {
+            print("MapVC: The error variable in pin is not empty")
+            showAlertViewController((pin?.error)!)
         } else {
-            print("photos haven't finished downloading yet!")
+            showAlertViewController(Constants.photosNotDoneDownloading)
         }
     }
     
@@ -189,7 +212,6 @@ class MapVC: UIViewController, MKMapViewDelegate {
         saveMapRegion()
     }
     
-
     func mapView(mapView: MKMapView, didSelectAnnotationView view: MKAnnotationView) {
         if (deleteMode) {
             let selectedTitle = view.annotation?.title!
@@ -204,12 +226,10 @@ class MapVC: UIViewController, MKMapViewDelegate {
         var pin: Pin?
         fetchResultsFromCoreData()
         guard let fetchedPins = fetchedResultsController.fetchedObjects as? [Pin] else {
-            print("Fetched objects is still empty")
             return pin
         }
         for x in fetchedPins {
             if title == x.title {
-                print (x.title)
                 pin = x
             }
         }

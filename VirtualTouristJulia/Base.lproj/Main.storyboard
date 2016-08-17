@@ -52,15 +52,15 @@
                     <navigationItem key="navigationItem" id="uQJ-zW-CyB">
                         <barButtonItem key="rightBarButtonItem" title="Edit" id="EKq-dJ-KNo">
                             <connections>
-                                <action selector="enableDelete:" destination="BYZ-38-t0r" id="IUI-9w-XEd"/>
+                                <action selector="rightNavigationBtn:" destination="BYZ-38-t0r" id="UNW-b5-9BQ"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="deleteLabel" destination="sLp-Jl-tAm" id="SAC-6y-TxG"/>
                         <outlet property="deleteView" destination="aZL-1c-Yiy" id="UGM-3D-TIO"/>
-                        <outlet property="editBtn" destination="EKq-dJ-KNo" id="owX-0T-l2s"/>
                         <outlet property="map" destination="6D0-Fb-Uu1" id="dh7-ux-EfI"/>
+                        <outlet property="navigationBtn" destination="EKq-dJ-KNo" id="Xxf-f3-LaL"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -137,40 +137,24 @@
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="krb-Tw-Whk"/>
                                 </items>
                             </toolbar>
-                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="DQI-Nx-zy3">
-                                <rect key="frame" x="282" y="419" width="37" height="37"/>
-                                <color key="color" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
-                            </activityIndicatorView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Downloading new images..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uXv-1q-wfM">
-                                <rect key="frame" x="196" y="465" width="209" height="21"/>
-                                <fontDescription key="fontDescription" type="italicSystem" pointSize="17"/>
-                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="trailingMargin" secondItem="jei-tv-gOx" secondAttribute="trailing" constant="-20" id="670-Y7-Ji7"/>
                             <constraint firstItem="ati-ov-Fdb" firstAttribute="top" secondItem="OEw-nI-mir" secondAttribute="bottom" id="9tD-px-rfN"/>
-                            <constraint firstItem="OEw-nI-mir" firstAttribute="top" secondItem="DQI-Nx-zy3" secondAttribute="bottom" constant="100" id="EzO-Ib-86P"/>
                             <constraint firstItem="ati-ov-Fdb" firstAttribute="top" secondItem="rRC-4t-ZjX" secondAttribute="bottom" id="Fka-MY-5r6"/>
                             <constraint firstAttribute="trailingMargin" secondItem="rRC-4t-ZjX" secondAttribute="trailing" constant="-20" id="Gpz-IG-Vp2"/>
                             <constraint firstItem="rRC-4t-ZjX" firstAttribute="top" secondItem="jei-tv-gOx" secondAttribute="bottom" constant="1" id="J27-md-1zX"/>
-                            <constraint firstItem="DQI-Nx-zy3" firstAttribute="centerX" secondItem="dRn-zT-O8Q" secondAttribute="centerX" id="LMx-O9-Cgd"/>
                             <constraint firstItem="jei-tv-gOx" firstAttribute="leading" secondItem="dRn-zT-O8Q" secondAttribute="leadingMargin" constant="-20" id="QJB-UB-oiy"/>
                             <constraint firstItem="jei-tv-gOx" firstAttribute="top" secondItem="Bxb-xC-41i" secondAttribute="bottom" id="U9v-q5-RtG"/>
                             <constraint firstAttribute="trailingMargin" secondItem="OEw-nI-mir" secondAttribute="trailing" constant="-20" id="aMq-wz-iBg"/>
                             <constraint firstItem="OEw-nI-mir" firstAttribute="leading" secondItem="dRn-zT-O8Q" secondAttribute="leadingMargin" constant="-20" id="h3L-Y4-8Zh"/>
-                            <constraint firstItem="OEw-nI-mir" firstAttribute="top" secondItem="uXv-1q-wfM" secondAttribute="bottom" constant="70" id="kQf-Pe-v79"/>
-                            <constraint firstItem="uXv-1q-wfM" firstAttribute="centerX" secondItem="dRn-zT-O8Q" secondAttribute="centerX" id="rpC-kd-Po4"/>
                             <constraint firstItem="rRC-4t-ZjX" firstAttribute="leading" secondItem="dRn-zT-O8Q" secondAttribute="leadingMargin" constant="-20" id="zEJ-5f-eJ0"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="XWo-26-o4e"/>
                     <connections>
-                        <outlet property="activityIndicator" destination="DQI-Nx-zy3" id="t2k-Pi-KAY"/>
                         <outlet property="collectionView" destination="rRC-4t-ZjX" id="oNl-N3-75q"/>
-                        <outlet property="downloadingLabel" destination="uXv-1q-wfM" id="2Nm-vn-dZt"/>
                         <outlet property="map" destination="jei-tv-gOx" id="MPN-r5-vfk"/>
                         <outlet property="toolbarBtn" destination="iu5-zP-IQF" id="V8F-9U-ejn"/>
                     </connections>
