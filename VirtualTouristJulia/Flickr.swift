@@ -44,6 +44,7 @@ class Flickr {
                     print("Error parsing JSON data (2).")
                     return
             }
+            print(photos)
             print("Flickr.swift: number of urls retrieved: ", photos.count)
             for p in photos {
                 guard let url = p["url_m"] as? String else {

@@ -3,21 +3,32 @@
 //  Created by Julia Miller on 7/19/16.
 //  Copyright © 2016 Julia Miller. All rights reserved.
 
+//PTD - add to the NSFetchedResultsControllerDelegate; look @ other projects and replicate what they did. You went too adrift in your own explorations.
+
 import Foundation
 import UIKit
 import CoreData
 import MapKit
 
-class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource {
+class AlbumVC: UIViewController {
     
     @IBOutlet weak var map: MKMapView!
     @IBOutlet weak var collectionView: UICollectionView!
     
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet weak var downloadingLabel: UILabel!
-    @IBOutlet weak var newCollectionBtn: UIBarButtonItem!
+    @IBOutlet weak var toolbarBtn: UIBarButtonItem!
+    
+    let newCollection = "New Collection"
+    let removeSelected = "Remove Selected Pictures"
     
     var pin: Pin!
+    
+    var selectedIndexPaths = [NSIndexPath]()
+    
+    var insertedIndexPaths: [NSIndexPath]!
+    var deletedIndexPaths: [NSIndexPath]!
+    var updatedIndexPaths: [NSIndexPath]!
     
     lazy var sharedContext: NSManagedObjectContext = {
         return CoreDataStackManager().sharedInstance().managedObjectContext
@@ -42,52 +53,6 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
         fetchSavedPhotos()
     }
     
-    @IBAction func downloadTwelveNewPhotos(sender: AnyObject) {
-        newCollectionBtn.enabled = false
-//        collectionView.hidden = true
-        downloadingLabel.hidden = false
-        activityIndicator.hidden = false
-        activityIndicator.startAnimating()
-        
-        for photo in frc.fetchedObjects! as! [Photo] {
-            sharedContext.deleteObject(photo)
-        }
-        
-        CoreDataStackManager().sharedInstance().saveContext()
-        Flickr.sharedInstance.retrieveParseAndSaveTwelveFlickrImages(pin) { (success, error) -> Void in
-            if error != "" {
-                print("AlbumVC: Error retrieving twelve new photos.")
-                return
-            }
-            else {
-                print("AlbumVC: 12 new photos have been downloaded successfully")
-                
-                //then there is this looong pause before the collection view reappears an d
-                //when i run through the code, it shows that
-                
-//                self.collectionView.hidden = false
-                self.downloadingLabel.hidden = true
-                self.activityIndicator.hidden = true
-                self.activityIndicator.stopAnimating()
-                self.newCollectionBtn.enabled = true
-                
-                print("Activity indicator and label should now be hidden")
-                
-                //why is there this loong pause before the statements above show on the simulator
-                
-                self.collectionView.reloadData()
-                
-                //the compiler runs throught the code but there is a looong pause before the simulator shows the collectionView is no longer hidden
-                
-                //collectionView.reloadData() works, but takes waay longer than it should.
-                //On the other hand, if I segue back into the mapVC and then reload the AlbumVC, the new photos load up immediately.
-                //Am brain stuck.
-                
-                //PTD USE THE NSFETCHEDRESULTSCONTROLLERDELEGATE instead; look at Mikael's project
-            }
-        }
-    }
-    
     func setupMap(coordinate: CLLocationCoordinate2D, span: CLLocationDegrees){
         let region = MKCoordinateRegionMake(coordinate, MKCoordinateSpanMake(span, span))
         let annotation = MKPointAnnotation()
@@ -96,6 +61,7 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
         map.addAnnotation(annotation)
         map.userInteractionEnabled = false
     }
+    
     func fetchSavedPhotos() {
         do {
             try frc.performFetch()
@@ -105,12 +71,101 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
         }
     }
     
+    @IBAction func toolbar(sender: AnyObject) {
+        if sender.title == removeSelected {
+            deleteSelectedPhotos()
+            updateToolbarButton()
+        }
+        else {
+            deleteAllAndDownloadTwelveNewImages()
+        } //RemoveAllPhotos() and DownloadTwelveNewPhotos
+    }
+    
+    func deleteSelectedPhotos(){
+        for index in selectedIndexPaths {
+            let photo = frc.objectAtIndexPath(index) as! Photo
+            print("deleted: ", photo.url)
+            sharedContext.deleteObject(photo)
+        }
+        CoreDataStackManager().sharedInstance().saveContext()
+        fetchSavedPhotos()
+        selectedIndexPaths = [NSIndexPath]()
+        updateToolbarButton()
+    }
+    
+    func deleteAllAndDownloadTwelveNewImages(){
+        toolbarBtn.enabled = false
+        collectionView.hidden = true
+        downloadingLabel.hidden = false
+        activityIndicator.hidden = false
+        activityIndicator.startAnimating()
+        
+        for photo in frc.fetchedObjects! as! [Photo] {
+            sharedContext.deleteObject(photo)
+        }
+        CoreDataStackManager().sharedInstance().saveContext()
+        
+        Flickr.sharedInstance.retrieveParseAndSaveTwelveFlickrImages(pin) { (success, error) -> Void in
+            if error != "" {
+                print("AlbumVC: Error retrieving twelve new photos.")
+                return
+            }
+            else {
+                print("AlbumVC: 12 new photos have been downloaded successfully")
+                
+                self.collectionView.hidden = false
+                self.downloadingLabel.hidden = true
+                self.activityIndicator.hidden = true
+                self.activityIndicator.stopAnimating()
+                self.toolbarBtn.enabled = true
+                
+                print("Activity indicator and label should now be hidden")
+                
+                self.collectionView.reloadData()
+            }
+        }
+    }
+    
+    func updateToolbarButton(){
+        if selectedIndexPaths.count > 0 {
+            toolbarBtn.title = removeSelected
+        } else {toolbarBtn.title = newCollection}
+    }
+}
+
+extension AlbumVC: NSFetchedResultsControllerDelegate {
+    
+    func controllerWillChangeContent(controller: NSFetchedResultsController) {
+        print("controllerWillChangeContent")
+        insertedIndexPaths = [NSIndexPath]()
+        updatedIndexPaths = [NSIndexPath]()
+        deletedIndexPaths = [NSIndexPath]()
+    }
+    
+    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+        print("ControllerDidChangeContent")
+        
+    }
+    
+    func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+        print("controller, didChangeObject")
+    }
+    
+}
+
+
+extension AlbumVC: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
-        print("AlbumVC: Clicked an image.")
         let selectedCell = collectionView.cellForItemAtIndexPath(indexPath) as! PhotoCell
-        selectedCell.imageView.image = nil
-        selectedCell.activityIndicator.hidden = false
-        selectedCell.activityIndicator.startAnimating()
+        if let index = selectedIndexPaths.indexOf(indexPath) {
+            selectedIndexPaths.removeAtIndex(index)
+            updateToolbarButton()
+            selectedCell.alpha = 1
+        } else {
+            selectedIndexPaths.append(indexPath)
+            updateToolbarButton()
+            selectedCell.alpha = 0.5
+        }
     }
     
     func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
@@ -122,7 +177,7 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
         //print("number of items in section: ", section.numberOfObjects)
         return numberOfFrcObjects
     }
-
+    
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier("AlbumVCCell", forIndexPath: indexPath) as! PhotoCell
         configureCell(cell, indexPath: indexPath)
@@ -138,9 +193,7 @@ class AlbumVC: UIViewController, UICollectionViewDelegate, UICollectionViewDataS
         cell.imageView.image = UIImage(data: data)
         cell.activityIndicator.hidden = true
     }
-}
-
-extension AlbumVC: UICollectionViewDelegateFlowLayout {
+    
     func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
         let x = (self.view.frame.width/2 - 10)
         return CGSize(width: x, height: x)
