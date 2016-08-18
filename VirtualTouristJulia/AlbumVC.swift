@@ -185,12 +185,16 @@ extension AlbumVC: UICollectionViewDelegate, UICollectionViewDataSource, UIColle
     }
     
     func configureCell(cell: PhotoCell, indexPath: NSIndexPath){
+        cell.activityIndicator.hidden = false
+        cell.activityIndicator.startAnimating()
+        cell.imageView.image = UIImage(named: "placeholder")
         let photo = frc.objectAtIndexPath(indexPath) as! Photo
         guard let data = photo.imageData else {
             print("Photo has no saved imageData.")
             return
         }
         cell.imageView.image = UIImage(data: data)
+        cell.activityIndicator.stopAnimating()
         cell.activityIndicator.hidden = true
     }
     
